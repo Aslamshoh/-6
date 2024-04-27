@@ -3,22 +3,9 @@
 несимметрично. При этом матрица А не меняется. После чего вычисляется выражение
 ((К*A T)*(F+А)-K* F T . Выводятся по мере формирования А, F и все матричные операции последовательно
 import numpy as np
-from sympy import primerange
 
 
-def generate_random_matrix(N):
-    return np.random.randint(-10, 11, size=(N, N))
-
-
-def count_primes_in_odd_columns(matrix):
-    count = 0
-    for j in range(1, matrix.shape[1], 2):  # Нечетные столбцы
-        for i in range(matrix.shape[0]):
-            if is_prime(matrix[i, j]):
-                count += 1
-    return count
-
-
+# Функция для проверки, является ли число простым
 def is_prime(n):
     if n <= 1:
         return False
@@ -28,39 +15,58 @@ def is_prime(n):
     return True
 
 
-def swap_areas(matrix, area1, area3):
-    temp = matrix[area1]
-    matrix[area1] = matrix[area3]
-    matrix[area3] = temp
+# Функция для формирования матрицы F
+def form_matrix_F(matrix_B, matrix_C):
+    num_primes_in_B = np.sum([is_prime(x) for x in matrix_B.flatten()])
 
-
-def create_F(matrix_B, matrix_C):
-    count_primes = count_primes_in_odd_columns(matrix_B)
-    perimeter_product = np.prod([matrix_B[0, 0], matrix_B[0, -1], matrix_B[-1, -1], matrix_B[-1, 0]])
-    if count_primes > perimeter_product:
-        swap_areas(matrix_B, (0, 0), (-1, -1))
+    if num_primes_in_B == 3:
+        matrix_B_symmetric = np.flip(matrix_B, axis=1)
+        matrix_B[:, 0], matrix_B[:, 2] = matrix_B_symmetric[:, 2], matrix_B_symmetric[:, 0]
     else:
-        matrix_B, matrix_C = matrix_C, matrix_B
-    return matrix_B + matrix_C
+        matrix_B, matrix_C = matrix_C.copy(), matrix_B.copy()
+
+    return matrix_B, matrix_C
 
 
-def main(K, N):
-    matrix_A = generate_random_matrix(N)
-    matrix_B = generate_random_matrix(N // 2)
-    matrix_C = generate_random_matrix(N // 2)
-    matrix_F = create_F(matrix_B, matrix_C)
+# Функция для вычисления выражения ((К*A.T)*(F+A)-K*F.T)
+def compute_expression(K, matrix_A, matrix_F):
+    result = np.dot(K * matrix_A.T, matrix_F + matrix_A) - K * matrix_F.T
+    return result
 
-    result = (K * np.transpose(matrix_A) @ (matrix_F + matrix_A) - K * np.transpose(matrix_F))
 
-    print("Matrix A:")
+# Генерация матрицы А
+def generate_matrix_A(N):
+    return np.random.randint(-10, 11, (N, N))
+
+
+# Основная функция
+def main():
+    K = float(input("Введите значение K: "))
+    N = int(input("Введите размерность матрицы А (N): "))
+
+    matrix_A = generate_matrix_A(N)
+    matrix_B = generate_matrix_A(N)
+    matrix_C = generate_matrix_A(N)
+
+    print("Матрица A:")
     print(matrix_A)
-    print("\nMatrix F:")
-    print(matrix_F)
-    print("\nResult:")
-    print(result)
+    print("\nМатрица B:")
+    print(matrix_B)
+    print("\nМатрица C:")
+    print(matrix_C)
+
+    matrix_F_B, matrix_F_C = form_matrix_F(matrix_B, matrix_C)
+
+    print("\nМатрица F, сформированная на основе матрицы B:")
+    print(matrix_F_B)
+    print("\nМатрица F, сформированная на основе матрицы C:")
+    print(matrix_F_C)
+
+    expression_result = compute_expression(K, matrix_A, matrix_F_B)
+    print("\nРезультат вычисления выражения ((К*A.T)*(F+A)-K*F.T):")
+    print(expression_result)
 
 
-# Пример использования
-K = 2
-N = 4
-main(K, N)
+if __name__ == "__main__":
+    main()
+
