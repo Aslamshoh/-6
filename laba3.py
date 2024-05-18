@@ -2,74 +2,122 @@
 3, то поменять в В симметрично области 1 и 3 местами, иначе С и В поменять местами 
 несимметрично. При этом матрица А не меняется. После чего вычисляется выражение
 ((К*A T)*(F+А)-K* F T . Выводятся по мере формирования А, F и все матричные операции последовательно
-import numpy as np
+Для ИСТд-11 вид матрицы А:
+ B C
+ D E
+Каждая из матриц B,C,D,E имеет вид
+Для ИСТд-11:
+ 1 2
+ 3 4
+'''
+import random
 
-# Функция для генерации матрицы NxN со случайными числами
-def generate_matrix_A(N):
-    return np.random.randint(1, 101, size=(N, N))
+def create_matrix(n):
+    return [[random.randint(-10, 10) for _ in range(n)] for _ in range(n)]
 
-# Функция для формирования матрицы F на основе B и C
-def form_matrix_F(matrix_B, matrix_C):
-    matrix_F_B = matrix_B.copy()
-    matrix_F_C = matrix_C.copy()
+def print_matrix(matrix):
+    for row in matrix:
+        print(' '.join(map(str, row)))
+    print()
+
+def transpose(matrix):
+    return [list(row) for row in zip(*matrix)]
+
+def add_matrices(a, b):
+    return [[a[i][j] + b[i][j] for j in range(len(a[0]))] for i in range(len(a))]
+
+def multiply_matrix_by_number(matrix, number):
+    return [[number * matrix[i][j] for j in range(len(matrix[0]))] for i in range(len(matrix))]
+
+def count_zeros_in_odd_columns_in_area1(matrix):
+    count = 0
+    n = len(matrix)
+    for i in range(n//2):
+        for j in range(i):
+            if matrix[i][j] == 0:
+                count += 1
+    for i in range(n//2, n):
+        for j in range(n - (i + 1)):
+            if matrix[i][j] == 0:
+                count += 1
+    return count
+
+def product_of_elements_in_area2(matrix):
+    product = 1
+    n = len(matrix)
+    for i in range(n//2):
+        for j in range(n//2, n):
+            product *= matrix[i][j]
+    return product
+
+def swap_symmetrically_areas_1_and_3(matrix):
+    n = len(matrix)
+    for i in range(n//2):
+        for j in range(i):
+            matrix[i][j], matrix[n-j-1][n-i-1] = matrix[n-j-1][n-i-1], matrix[i][j]
+
+def swap_matrices_c_and_e(c, e):
+    return e, c
 
 
-    return matrix_F_B, matrix_F_C
 
-# Функция для вычисления выражения ((K*A.T)*(F+A)-K*F.T)
-def compute_expression(K, matrix_A, matrix_F):
-    term1 = K * matrix_A.T
-    term2 = np.dot(term1, (matrix_F + matrix_A))
-    term3 = K * matrix_F.T
-    result = term2 - term3
-    return result
+K = int(input("Введите K: "))
+N = int(input("Введите N: "))
 
-# Функция для поиска чисел в матрице, которые делятся на заданное значение
-def find_divisible_numbers(matrix, divisor):
-    divisible_numbers = []
-    for number in matrix.flatten():
-        if number % divisor == 0:
-            divisible_numbers.append(number)
-    return divisible_numbers
 
-def main():
-    K = float(input("Введите значение K: "))
-    N = int(input("Введите размерность матрицы А (N): "))
-    divisor = int(input("Введите число, на которое будем проверять деление: "))
+A = create_matrix(N)
+B = [row[:N//2] for row in A[:N//2]]
+C = [row[N//2:] for row in A[:N//2]]
+D = [row[:N//2] for row in A[N//2:]]
+E = [row[N//2:] for row in A[N//2:]]
 
-    matrix_A = generate_matrix_A(N)
-    matrix_B = generate_matrix_A(N)
-    matrix_C = generate_matrix_A(N)
+print("Матрица A:")
+print_matrix(A)
 
-    print("Матрица A:")
-    print(matrix_A)
-    print("\nМатрица B:")
-    print(matrix_B)
-    print("\nМатрица C:")
-    print(matrix_C)
 
-    matrix_F_B, matrix_F_C = form_matrix_F(matrix_B, matrix_C)
+def form_matrix_f(b, c, d, e, condition):
+    n = len(b) * 2
+    f = [[0] * n for _ in range(n)]
+    if condition:
 
-    print("\nМатрица F, сформированная на основе матрицы B:")
-    print(matrix_F_B)
-    print("\nМатрица F, сформированная на основе матрицы C:")
-    print(matrix_F_C)
+        for i in range(n//2):
+            f[i][:n//2] = b[i]
+            f[i + n//2][:n//2] = d[i]
 
-    expression_result = compute_expression(K, matrix_A, matrix_F_B)
-    print("\nРезультат вычисления выражения ((К*A.T)*(F+A)-K*F.T):")
-    print(expression_result)
+        for i in range(n//2):
+            f[i][n//2:] = c[i]
+            f[i + n//2][n//2:] = e[i]
+    else:
 
-    divisible_numbers_A = find_divisible_numbers(matrix_A, divisor)
-    print(f"\nЧисла в матрице A, делящиеся на {divisor} без остатка:")
-    print(divisible_numbers_A)
+        for i in range(n//2):
+            f[i][:n//2] = b[i]
+            f[i + n//2][:n//2] = d[i]
 
-    divisible_numbers_B = find_divisible_numbers(matrix_B, divisor)
-    print(f"\nЧисла в матрице B, делящиеся на {divisor} без остатка:")
-    print(divisible_numbers_B)
+        for i in range(n//2):
+            f[i][n//2:] = e[i]
+            f[i + n//2][n//2:] = c[i]
+    return f
 
-    divisible_numbers_C = find_divisible_numbers(matrix_C, divisor)
-    print(f"\nЧисла в матрице C, делящиеся на {divisor} без остатка:")
-    print(divisible_numbers_C)
 
-if __name__ == "__main__":
-    main()
+
+zeros_in_E = count_zeros_in_odd_columns_in_area1(E)
+product_in_E = product_of_elements_in_area2(E)
+
+condition = zeros_in_E > product_in_E
+if condition:
+    swap_symmetrically_areas_1_and_3(B)
+F = form_matrix_f(B, C, D, E, condition)
+
+print("Матрица F:")
+print_matrix(F)
+
+
+AT = transpose(A)
+F_plus_A = add_matrices(F, A)
+F_transposed = transpose(F)
+
+expr = add_matrices(multiply_matrix_by_number(AT, K), F_plus_A)
+expr = add_matrices(expr, multiply_matrix_by_number(F_transposed, -K))
+
+print("Результат:")
+print_matrix(expr)
